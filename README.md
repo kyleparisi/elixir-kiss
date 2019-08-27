@@ -1,21 +1,15 @@
-# MyApp
+# elixir-kiss
 
-**TODO: Add description**
+## Usage
 
-## Installation
+```bash
+mix deps.get
+# terminal 1
+iex --name a@127.0.0.1 -S mix
+# terminal 2
+iex --name b@127.0.0.1 -S mix
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `myapp` to your list of dependencies in `mix.exs`:
-
-```elixir
-def deps do
-  [
-    {:myapp, "~> 0.1.0"}
-  ]
-end
+# either terminal, Node.list.  example:
+iex(b@127.0.0.1)1> Node.list
+[:"a@127.0.0.1"]
 ```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/myapp](https://hexdocs.pm/myapp).
-
