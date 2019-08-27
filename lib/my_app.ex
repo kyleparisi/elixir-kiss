@@ -3,9 +3,15 @@ defmodule MyApp.App do
 
   def start(_type, _args) do
     topologies = [
-      example: [
-        strategy: Cluster.Strategy.Epmd,
-        config: [hosts: [:"a@127.0.0.1", :"b@127.0.0.1"]],
+      gossip_example: [
+        strategy: Elixir.Cluster.Strategy.Gossip,
+        config: [
+          port: 45892,
+          if_addr: "0.0.0.0",
+          multicast_addr: "230.1.1.251",
+          multicast_ttl: 1,
+          secret: "somepassword"
+        ]
       ]
     ]
     children = [
