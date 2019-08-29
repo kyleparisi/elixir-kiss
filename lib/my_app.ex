@@ -24,35 +24,28 @@ defmodule MyApp.App do
 end
 
 defmodule MyApp.Supervisor do
-  @moduledoc """
-  This is the supervisor for the worker processes you wish to distribute
-  across the cluster, Swarm is primarily designed around the use case
-  where you are dynamically creating many workers in response to events. It
-  works with other use cases as well, but that's the ideal use case.
-  """
-  use Supervisor
+ use DynamicSupervisor
 
-  def start_link() do
-    Supervisor.start_link(__MODULE__, [], name: __MODULE__)
+  def start_link(_arg) do
+    DynamicSupervisor.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
-  def init(_) do
-    children = [
-      worker(MyApp.Worker, [], restart: :temporary)
-    ]
-    supervise(children, strategy: :simple_one_for_one)
+  def init(:ok) do
+    DynamicSupervisor.init(strategy: :one_for_one)
   end
 
   @doc """
   Registers a new worker, and creates the worker process
   """
-  def register(worker_name) do
-    import Supervisor.Spec
-    {:ok, _pid} = Supervisor.start_child(__MODULE__, worker(MyApp.Worker, [worker_name]))
+  def register(name) do
+    child_spec = {MyApp.Worker, name}
+    {:ok, _pid} = Supervisor.start_child(__MODULE__, child_spec)
   end
 end
 
 defmodule MyApp.Worker do
+  use GenServer
+
   @moduledoc """
   This is the worker process, in this case, it simply posts on a
   random recurring interval to stdout.
