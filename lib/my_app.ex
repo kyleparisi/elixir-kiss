@@ -55,7 +55,7 @@ defmodule MyApp.Worker do
   end
 
   def init([name]) do
-    {:ok, {name, :rand.uniform(5_000)}, 0}
+    {:ok, {name, 5_000}, 0}
   end
 
   # called when a handoff has been initiated due to changes
@@ -83,6 +83,7 @@ defmodule MyApp.Worker do
   # to ignore the handoff state, or apply your own conflict resolution
   # strategy
   def handle_cast({:swarm, :resolve_conflict, _delay}, state) do
+    IO.puts "conflict detected"
     {:noreply, state}
   end
 
