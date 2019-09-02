@@ -4,13 +4,10 @@
 
 ```bash
 mix deps.get
-# terminal 1
-iex --name a@127.0.0.1 -S mix
-# terminal 2
-iex --name b@127.0.0.1 -S mix
-
-# either terminal
-MyApp.ExampleUsage.start_worker("abc")
-MyApp.ExampleUsage.get_worker("abc")
-MyApp.ExampleUsage.get_foos()
+# server 1, cookies are requied when dealing with remote machines
+# Your server will also need an IAM role that has the ability to 
+# describe instances.
+iex --name app@10.0.0.35 --cookie test -S mix
+# server 2
+iex --name app@10.0.0.168 --cookie test -S mix
 ```
