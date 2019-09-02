@@ -1,15 +1,17 @@
 # elixir-kiss
 
-## Usage
-
 ```bash
+# install hex dependency manager
+mix local.hex
+# install phoenix
+mix archive.install hex phx_new 1.4.9
+mix phx.new . --app hello
 mix deps.get
-# terminal 1
-iex --name a@127.0.0.1 -S mix
-# terminal 2
-iex --name b@127.0.0.1 -S mix
-
-# either terminal, Node.list.  example:
-iex(b@127.0.0.1)1> Node.list
-[:"a@127.0.0.1"]
+# database driver, expects postgres connection details in config/dev.exs
+# make sure the database is running beforehand
+mix ecto.create
+cd assets && npm install && node node_modules/webpack/bin/webpack.js --mode development
+cd ..
+mix phx.server
+# open browser to localhost:4000
 ```
