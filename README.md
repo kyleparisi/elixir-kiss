@@ -18,4 +18,6 @@ iex(3)> ExAws.Dynamo.get_item("sessions", %{id: "sess:6yOOfHbJrsio0PRgLbo8Rarfvu
      "type" => %{"S" => "connect-session"}
    }
  }}
+ iex(2)> ExAws.Dynamo.put_item("sessions", %{id: "sess:bloop", test: "test"}) |> ExAws.request
+{:ok, %{}}
 ```
