@@ -4,12 +4,18 @@
 
 ```bash
 mix deps.get
-# terminal 1
-iex --name a@127.0.0.1 -S mix
-# terminal 2
-iex --name b@127.0.0.1 -S mix
-
-# either terminal, Node.list.  example:
-iex(b@127.0.0.1)1> Node.list
-[:"a@127.0.0.1"]
+iex -S mix
+# if you already have aws cli configured...
+iex(3)> ExAws.Dynamo.get_item("sessions", %{id: "sess:6yOOfHbJrsio0PRgLbo8RarfvuXsZOCw"}) |> ExAws.request
+{:ok,
+ %{
+   "Item" => %{
+     "expires" => %{"N" => "1564537223"},
+     "id" => %{"S" => "sess:6yOOfHbJrsio0PRgLbo8RarfvuXsZOCw"},
+     "sess" => %{
+       "S" => "{\"cookie\":{\"originalMaxAge\":null,\"expires\":null,\"httpOnly\":true,\"path\":\"/\"}}"
+     },
+     "type" => %{"S" => "connect-session"}
+   }
+ }}
 ```

@@ -14,7 +14,6 @@ defmodule MyApp.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      mod: {MyApp.App, []},
       extra_applications: [:logger]
     ]
   end
@@ -24,7 +23,11 @@ defmodule MyApp.MixProject do
     [
       # {:dep_from_hexpm, "~> 0.3.0"},
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
-      {:libcluster, "~> 3.1"}
+      {:ex_aws, "~> 2.1"},
+      {:ex_aws_dynamo, "~> 2.2"},
+      {:configparser_ex, "~> 4.0"},
+      {:poison, "~> 3.0"},
+      {:hackney, "~> 1.9"}
     ]
   end
 end
