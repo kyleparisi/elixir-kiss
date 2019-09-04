@@ -49,6 +49,7 @@ defmodule MyAppTest do
       |> Router.call(@opts)
 
     body = Poison.decode(conn.resp_body)
+    IO.inspect(body)
     assert conn.status == 400
   end
 

@@ -42,9 +42,9 @@ defmodule MyApp.Router do
       {:error, :invalid, 0} ->
         Logger.info("No body provided for /login")
         send_resp(conn, 400, Poison.encode!(%{errors: %{email: "Please provide an email.", password: "Please provide a password"}}))
-      {:ok, %{"email" => _}} ->
+      {:ok, %{"email" => email}} ->
         Logger.info("No password provided for /login")
-        send_resp(conn, 400, Poison.encode!(%{errors: %{password: "Please provide a password"}}))
+        send_resp(conn, 400, Poison.encode!(%{errors: %{password: "Please provide a password"}, email: email}))
       {:ok, %{"password" => _}} ->
         Logger.info("No email provided for /login")
         send_resp(conn, 400, Poison.encode!(%{errors: %{email: "Please provide an email."}}))
