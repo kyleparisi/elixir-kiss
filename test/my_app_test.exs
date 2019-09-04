@@ -1,8 +1,21 @@
 defmodule MyAppTest do
   use ExUnit.Case
-  doctest MyApp
+  use Plug.Test
+  doctest MyApp.Router
 
-  test "greets the world" do
-    assert MyApp.hello() == :world
+  alias MyApp.Router
+
+  @opts Router.init([])
+
+  test "returns ok" do
+    conn =
+      :get
+      |> conn("/health", "")
+      |> Router.call(@opts)
+
+    IO.inspect conn
+    assert conn.state == :sent
+    assert conn.status == 200
+    assert conn.resp_body == "Ok"
   end
 end
