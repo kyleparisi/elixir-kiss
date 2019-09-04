@@ -31,6 +31,17 @@ defmodule MyAppTest do
     assert conn.status == 400
   end
 
+  test "/login with empty email and password" do
+    conn =
+      :post
+      |> conn("/login", Poison.encode!(%{email: "", password: ""}))
+      |> Router.call(@opts)
+
+    body = Poison.decode(conn.resp_body)
+    IO.inspect(body)
+    assert conn.status == 400
+  end
+
   test "/login with no password" do
     conn =
       :post

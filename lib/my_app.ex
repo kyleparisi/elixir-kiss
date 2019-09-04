@@ -35,6 +35,8 @@ defmodule MyApp.Router do
   post "/login" do
     {:ok, body, conn} = read_body(conn)
     case Poison.decode(body) do
+      {:ok, %{"email" => "", "password" => ""}} ->
+        send_resp(conn, 400, Poison.encode!(%{errors: %{email: "Please provide an email.", password: "Please provide a password"}}))
       {:ok, %{"email" => email, "password" => password}} ->
         send_resp(conn, 200, "")
       {:error, :invalid, 0} ->
