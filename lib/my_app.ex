@@ -19,34 +19,34 @@ defmodule MyApp.Router do
   use Plug.Router
   use Plug.Debugger
   require Logger
-  
+
   plug(Plug.Logger, log: :debug)
   plug(:match)
   plug(:dispatch)
 
-  @doc ~S"""
-  Parses the given `line` into a command.
-
-  ## Examples
-
-      iex> MyApp.Router.parse("CREATE shopping\r\n")
-      {:ok, {:create, "shopping"}}
-
-  """
-  def parse(_line) do
-    :not_implemented
+  defmodule User do
+    defstruct email: nil, password: nil
   end
 
   get "/health" do
     send_resp(conn, 200, "Ok")
   end
 
-  # Basic example to handle POST requests wiht a JSON body
-  post "/post" do
+  post "/login" do
     {:ok, body, conn} = read_body(conn)
-    body = Poison.decode!(body)
-    IO.inspect(body)
-    send_resp(conn, 201, "created: #{get_in(body, ["message"])}\n")
+    case Poison.decode(body) do
+      {:ok, %{"email" => email, "password" => password}} ->
+        send_resp(conn, 200, "")
+      {:error, :invalid, 0} ->
+        Logger.info("No body provided for /login")
+        send_resp(conn, 400, Poison.encode!(%{errors: %{email: "Please provide an email.", password: "Please provide a password"}}))
+      {:ok, %{"email" => _}} ->
+        Logger.info("No password provided for /login")
+        send_resp(conn, 400, Poison.encode!(%{errors: %{password: "Please provide a password"}}))
+      {:ok, %{"password" => _}} ->
+        Logger.info("No email provided for /login")
+        send_resp(conn, 400, Poison.encode!(%{errors: %{email: "Please provide an email."}}))
+    end
   end
 
   # "Default" route that will get called when no other route is matched
