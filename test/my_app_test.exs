@@ -27,7 +27,7 @@ defmodule MyAppTest do
       |> conn("/login", "")
       |> Router.call(@opts)
 
-    body = Poison.decode(conn.resp_body)
+#    body = Poison.decode(conn.resp_body)
     assert conn.status == 400
   end
 
@@ -37,8 +37,8 @@ defmodule MyAppTest do
       |> conn("/login", Poison.encode!(%{email: "", password: ""}))
       |> Router.call(@opts)
 
-    body = Poison.decode(conn.resp_body)
-    IO.inspect(body)
+#    body = Poison.decode(conn.resp_body)
+#    IO.inspect(body)
     assert conn.status == 400
   end
 
@@ -48,8 +48,8 @@ defmodule MyAppTest do
       |> conn("/login", Poison.encode!(%{email: "abc"}))
       |> Router.call(@opts)
 
-    body = Poison.decode(conn.resp_body)
-    IO.inspect(body)
+#    body = Poison.decode(conn.resp_body)
+#    IO.inspect(body)
     assert conn.status == 400
   end
 
@@ -59,7 +59,7 @@ defmodule MyAppTest do
       |> conn("/login", Poison.encode!(%{password: "abc"}))
       |> Router.call(@opts)
 
-    body = Poison.decode(conn.resp_body)
+#    body = Poison.decode(conn.resp_body)
     assert conn.status == 400
   end
 
@@ -69,7 +69,7 @@ defmodule MyAppTest do
       |> conn("/login", Poison.encode!(%{email: "abc", password: "abc"}))
       |> Router.call(@opts)
 
-    body = Poison.decode(conn.resp_body)
+#    body = Poison.decode(conn.resp_body)
     assert conn.status == 200
   end
 end
