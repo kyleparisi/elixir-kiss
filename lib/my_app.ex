@@ -6,7 +6,7 @@ defmodule MyApp.App do
       Plug.Adapters.Cowboy.child_spec(
         scheme: :http,
         plug: MyApp.Router,
-        options: [port: 8085]
+        options: [port: 8085, ip: {127,0,0,1}]
       )
     ]
 
