@@ -12,15 +12,15 @@ defmodule MyApp.App do
 end
 
 defmodule Router do
-  def match("GET", ["health"]) do
+  def match("GET", ["health"], _conn) do
     "Ok"
   end
 
-  def match("GET", ["hello", name]) do
+  def match("GET", ["hello", name], _conn) do
     "Hello #{name}"
   end
 
-  def match("GET", ["hello2", name]) do
+  def match("GET", ["hello2", name], _conn) do
     EEx.eval_file("templates/hello.html.eex", name: name)
   end
 
@@ -55,7 +55,7 @@ defmodule MyPlug do
         send_resp(conn, http_code, body <> "\n")
 
       _ ->
-        send_resp(conn, 200, res)
+        send_resp(conn, 200, res <> "\n")
     end
   end
 end
