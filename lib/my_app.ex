@@ -25,6 +25,7 @@ defmodule Router do
   end
 
   def match("POST", ["echo"], conn) do
+    IO.inspect conn.body_params
     conn.body_params
   end
 
@@ -41,7 +42,7 @@ defmodule MyPlug do
   end
 
   def call(conn, _opts) do
-    parsers = Plug.Parsers.init(parsers: [:urlencoded, :json], json_decoder: Poison)
+    parsers = Plug.Parsers.init(parsers: [:json, :urlencoded], json_decoder: Poison)
     conn = Plug.Parsers.call(conn, parsers)
     res = Router.match(conn.method, conn.path_info, conn)
 
