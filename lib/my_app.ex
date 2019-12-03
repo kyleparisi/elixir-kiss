@@ -12,23 +12,26 @@ defmodule MyApp.App do
 end
 
 defmodule Router do
-  def match("GET", ["health"], _conn) do
-    "Ok\n"
+  def match("GET", ["health"]) do
+    "Ok"
   end
 
-  def match("GET", ["hello", name], _conn) do
-    "Hello #{name}\n"
+  def match("GET", ["hello", name]) do
+    "Hello #{name}"
   end
 
-  def match("GET", ["hello2", name], _conn) do
-    EEx.eval_file("templates/hello.html.eex", [name: name])
+  def match("GET", ["hello2", name]) do
+    EEx.eval_file("templates/hello.html.eex", name: name)
+  end
+
+  def match("POST", ["echo"], conn) do
+    conn.body_params
   end
 
   def match(_, _, _) do
-    {404, "Not Found"}
+    {:not_found, "Not Found"}
   end
 end
-
 
 defmodule MyPlug do
   import Plug.Conn
@@ -38,10 +41,20 @@ defmodule MyPlug do
   end
 
   def call(conn, _opts) do
+    parsers = Plug.Parsers.init(parsers: [:urlencoded, :json], json_decoder: Poison)
+    conn = Plug.Parsers.call(conn, parsers)
     res = Router.match(conn.method, conn.path_info, conn)
+
     case res do
-     {http_code, body} -> send_resp(conn, http_code, body)
-      _ -> send_resp(conn, 200, res)
+      json when is_map(json) ->
+        {:ok, res} = Poison.encode(json)
+        send_resp(conn, 200, res <> "\n")
+
+      {http_code, body} ->
+        send_resp(conn, http_code, body <> "\n")
+
+      _ ->
+        send_resp(conn, 200, res)
     end
   end
 end

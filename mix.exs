@@ -28,7 +28,6 @@ defmodule MyApp.MixProject do
       {:plug, "~> 1.5"},
       {:plug_cowboy, "~> 1.0"},
       {:poison, "~> 3.1"}
-
     ]
   end
 end
