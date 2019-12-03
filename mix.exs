@@ -27,7 +27,8 @@ defmodule MyApp.MixProject do
       {:cowboy, "~> 1.0.0"},
       {:plug, "~> 1.5"},
       {:plug_cowboy, "~> 1.0"},
-      {:poison, "~> 3.1"}
+      {:poison, "~> 3.1"},
+      {:myxql, "~> 0.2.0"}
     ]
   end
 end
