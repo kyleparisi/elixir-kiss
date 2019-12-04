@@ -15,8 +15,16 @@ end
 defmodule Router do
   import Validations
 
-  def validate("GET", ["user", id], _conn), do: [validate_integer("id", id)]
-  def validate(_, _, _), do: []
+  def validate_body("POST", ["login"], conn),
+    do: [
+      validate_not_empty("email", conn.body_params["email"]),
+      validate_not_empty("password", conn.body_params["email"])
+    ]
+
+  def validate_body(_, _, _), do: []
+
+  def validate_path("GET", ["user", id], _conn), do: [validate_integer("id", id)]
+  def validate_path(_, _, _), do: []
 
   def match("GET", ["health"], _conn) do
     "Ok"
@@ -51,7 +59,7 @@ defmodule PathValidator do
   def init(opts), do: opts
 
   def call(conn, _opts) do
-    validations = Router.validate(conn.method, conn.path_info, conn)
+    validations = Router.validate_path(conn.method, conn.path_info, conn)
 
     errors =
       Enum.reduce(validations, %{}, fn {key, value}, acc ->
@@ -64,6 +72,31 @@ defmodule PathValidator do
     if Enum.empty?(errors) do
       params = Enum.into(validations, %{})
       put_in(conn.path_params, params)
+    else
+      json_resp(conn, 422, errors) |> halt
+    end
+  end
+end
+
+defmodule BodyValidator do
+  import Plug.Conn
+  import Responses
+
+  def init(opts), do: opts
+
+  def call(conn, _opts) do
+    validations = Router.validate_body(conn.method, conn.path_info, conn)
+
+    errors =
+      Enum.reduce(validations, %{}, fn {key, value}, acc ->
+        case value do
+          {:error, msg} -> Map.put(acc, key, msg)
+          _ -> acc
+        end
+      end)
+
+    if Enum.empty?(errors) do
+      conn
     else
       json_resp(conn, 422, errors) |> halt
     end
@@ -102,5 +135,6 @@ defmodule MyPipeline do
   plug(Plug.Logger)
   plug(PathValidator)
   plug(Plug.Parsers, parsers: [:json, :urlencoded], json_decoder: Poison)
+  plug(BodyValidator)
   plug(MyPlug)
 end
