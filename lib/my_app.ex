@@ -13,14 +13,13 @@ defmodule MyApp.App do
 end
 
 defmodule DB do
-
   def paginate(query) do
-    query = String.replace(query, ";", "") |> String.trim
+    query = String.replace(query, ";", "") |> String.trim()
     query <> " LIMIT 0,100;"
   end
 
   def paginate(query, page) do
-    query = String.replace(query, ";", "") |> String.trim
+    query = String.replace(query, ";", "") |> String.trim()
     query <> " LIMIT #{page * 100},#{page * 100 + 100};"
   end
 
@@ -62,12 +61,11 @@ defmodule Router do
   end
 
   def match("GET", ["user", id], conn) do
-    IO.inspect(conn)
     "SELECT * FROM user where id = ?" |> DB.query(:db, [conn.path_params["id"]]) |> hd
   end
 
   def match("POST", ["echo"], conn) do
-    IO.inspect conn.body_params
+    IO.inspect(conn.body_params)
     conn.body_params
   end
 
@@ -81,20 +79,42 @@ defmodule PathValidator do
 
   def init(opts), do: opts
 
-  defp validate_integer(v) do
-    case Integer.parse(v) do
-      :error -> {:error, "could not parse #{v} as integer"}
-      {int, _} -> int
+  defp validate_integer(key, value) do
+    case Integer.parse(value) do
+      :error -> {key, {:error, "could not parse #{value} as integer"}}
+      {int, _} -> {key, int}
     end
   end
 
   def match("GET", ["user", id], conn) do
-    value = validate_integer(id)
-    put_in(conn.path_params["id"], value)
+    [validate_integer("id", id)]
+  end
+
+  def match(_, _, _), do: []
+
+  def json_resp(conn, status, body) do
+    conn
+    |> put_resp_header("content-type", "application/json")
+    |> send_resp(status, Poison.encode!(body) <> "\n")
   end
 
   def call(conn, _opts) do
-    match(conn.method, conn.path_info, conn)
+    validations = match(conn.method, conn.path_info, conn)
+
+    errors =
+      Enum.reduce(validations, %{}, fn {key, value}, acc ->
+        case value do
+          {:error, msg} -> Map.put(acc, key, msg)
+          _ -> acc
+        end
+      end)
+
+    if Enum.empty?(errors) do
+      params = Enum.into(validations, %{})
+      put_in(conn.path_params, params)
+    else
+      json_resp(conn, 422, errors) |> halt
+    end
   end
 end
 
@@ -122,16 +142,17 @@ defmodule MyPlug do
   end
 
   defp json_resp(conn, status, body) do
-    conn |> put_resp_header("content-type", "application/json") |> send_resp(status, Poison.encode!(body))
+    conn
+    |> put_resp_header("content-type", "application/json")
+    |> send_resp(status, Poison.encode!(body))
   end
-
 
   def handle_errors(conn, %{kind: _kind, reason: _reason, stack: _stack}) do
     send_resp(conn, conn.status, "Something went wrong")
   end
 
   def on_error_fn(conn, errors) do
-    IO.puts "wat"
+    IO.puts("wat")
     json_resp(conn, 422, errors) |> halt
   end
 end
@@ -143,7 +164,7 @@ defmodule MyPipeline do
   # given plug.
   use Plug.Builder
 
-  plug Plug.Logger
-  plug PathValidator
-  plug MyPlug
+  plug(Plug.Logger)
+  plug(PathValidator)
+  plug(MyPlug)
 end
