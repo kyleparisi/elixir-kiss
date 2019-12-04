@@ -4,7 +4,7 @@ defmodule MyApp.App do
   def start(_type, _args) do
     children = [
       {Plug.Cowboy, scheme: :http, plug: MyPlug, options: [port: 4001]},
-      {MyXQL, username: "application", hostname: "localhost", password: "bleepbloop", database: "myapp", name: :myapp_db}
+      {MyXQL, username: "application", hostname: "localhost", password: "bleepbloop", database: "myapp", name: :db}
     ]
 
     opts = [strategy: :one_for_one, name: MyApp.Supervisor]
