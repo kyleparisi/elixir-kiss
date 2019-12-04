@@ -15,6 +15,9 @@ end
 defmodule Router do
   import Validations
 
+  def validate("GET", ["user", id], _conn), do: [validate_integer("id", id)]
+  def validate(_, _, _), do: []
+
   def match("GET", ["health"], _conn) do
     "Ok"
   end
@@ -27,8 +30,7 @@ defmodule Router do
     EEx.eval_file("templates/hello.html.eex", name: name)
   end
 
-  def validate("GET", ["user", id], conn), do: [validate_integer("id", id)]
-  def match("GET", ["user", id], conn) do
+  def match("GET", ["user", _id], conn) do
     "SELECT * FROM user where id = ?" |> DB.query(:db, [conn.path_params["id"]]) |> hd
   end
 
@@ -37,7 +39,6 @@ defmodule Router do
     conn.body_params
   end
 
-  def validate(_, _, _), do: []
   def match(_, _, _) do
     {:not_found, "Not Found"}
   end
