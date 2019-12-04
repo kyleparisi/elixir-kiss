@@ -3,8 +3,13 @@ defmodule MyApp.App do
 
   def start(_type, _args) do
     children = [
-      {Plug.Cowboy, scheme: :http, plug: MyPlug, options: [port: 4001]},
-      {MyXQL, username: "application", hostname: "localhost", password: "bleepbloop", database: "myapp", name: :db}
+      {Plug.Cowboy, scheme: :http, plug: Pipeline, options: [port: 4001]},
+      {MyXQL,
+       username: "application",
+       hostname: "localhost",
+       password: "bleepbloop",
+       database: "myapp",
+       name: :db}
     ]
 
     opts = [strategy: :one_for_one, name: MyApp.Supervisor]
@@ -52,57 +57,6 @@ defmodule Router do
   end
 end
 
-defmodule PathValidator do
-  import Plug.Conn
-  import Responses
-
-  def init(opts), do: opts
-
-  def call(conn, _opts) do
-    validations = Router.validate_path(conn.method, conn.path_info, conn)
-
-    errors =
-      Enum.reduce(validations, %{}, fn {key, value}, acc ->
-        case value do
-          {:error, msg} -> Map.put(acc, key, msg)
-          _ -> acc
-        end
-      end)
-
-    if Enum.empty?(errors) do
-      params = Enum.into(validations, %{})
-      put_in(conn.path_params, params)
-    else
-      json_resp(conn, 422, errors) |> halt
-    end
-  end
-end
-
-defmodule BodyValidator do
-  import Plug.Conn
-  import Responses
-
-  def init(opts), do: opts
-
-  def call(conn, _opts) do
-    validations = Router.validate_body(conn.method, conn.path_info, conn)
-
-    errors =
-      Enum.reduce(validations, %{}, fn {key, value}, acc ->
-        case value do
-          {:error, msg} -> Map.put(acc, key, msg)
-          _ -> acc
-        end
-      end)
-
-    if Enum.empty?(errors) do
-      conn
-    else
-      json_resp(conn, 422, errors) |> halt
-    end
-  end
-end
-
 defmodule MyPlug do
   import Plug.Conn
   import Responses
@@ -123,18 +77,4 @@ defmodule MyPlug do
         send_resp(conn, 200, res <> "\n")
     end
   end
-end
-
-defmodule MyPipeline do
-  # We use Plug.Builder to have access to the plug/2 macro.
-  # This macro can receive a function or a module plug and an
-  # optional parameter that will be passed unchanged to the
-  # given plug.
-  use Plug.Builder
-
-  plug(Plug.Logger)
-  plug(PathValidator)
-  plug(Plug.Parsers, parsers: [:json, :urlencoded], json_decoder: Poison)
-  plug(BodyValidator)
-  plug(MyPlug)
 end
