@@ -47,7 +47,18 @@ defmodule DB do
   end
 end
 
+defmodule Validations do
+  def validate_integer(key, value) do
+    case Integer.parse(value) do
+      :error -> {key, {:error, "could not parse #{value} as integer"}}
+      {int, _} -> {key, int}
+    end
+  end
+end
+
 defmodule Router do
+  import Validations
+
   def match("GET", ["health"], _conn) do
     "Ok"
   end
@@ -60,6 +71,7 @@ defmodule Router do
     EEx.eval_file("templates/hello.html.eex", name: name)
   end
 
+  def validate("GET", ["user", id], conn), do: [validate_integer("id", id)]
   def match("GET", ["user", id], conn) do
     "SELECT * FROM user where id = ?" |> DB.query(:db, [conn.path_params["id"]]) |> hd
   end
@@ -69,37 +81,30 @@ defmodule Router do
     conn.body_params
   end
 
+  def validate(_, _, _), do: []
   def match(_, _, _) do
     {:not_found, "Not Found"}
   end
 end
 
-defmodule PathValidator do
+defmodule Responses do
   import Plug.Conn
-
-  def init(opts), do: opts
-
-  defp validate_integer(key, value) do
-    case Integer.parse(value) do
-      :error -> {key, {:error, "could not parse #{value} as integer"}}
-      {int, _} -> {key, int}
-    end
-  end
-
-  def match("GET", ["user", id], conn) do
-    [validate_integer("id", id)]
-  end
-
-  def match(_, _, _), do: []
 
   def json_resp(conn, status, body) do
     conn
     |> put_resp_header("content-type", "application/json")
     |> send_resp(status, Poison.encode!(body) <> "\n")
   end
+end
+
+defmodule PathValidator do
+  import Plug.Conn
+  import Responses
+
+  def init(opts), do: opts
 
   def call(conn, _opts) do
-    validations = match(conn.method, conn.path_info, conn)
+    validations = Router.validate(conn.method, conn.path_info, conn)
 
     errors =
       Enum.reduce(validations, %{}, fn {key, value}, acc ->
@@ -120,18 +125,16 @@ end
 
 defmodule MyPlug do
   import Plug.Conn
+  import Responses
 
   def init(opts), do: opts
 
   def call(conn, _opts) do
-    parsers = Plug.Parsers.init(parsers: [:json, :urlencoded], json_decoder: Poison)
-    conn = Plug.Parsers.call(conn, parsers)
     res = Router.match(conn.method, conn.path_info, conn)
 
     case res do
       json when is_map(json) ->
-        {:ok, res} = Poison.encode(json)
-        send_resp(conn, 200, res <> "\n")
+        json_resp(conn, 200, json)
 
       {http_code, body} ->
         send_resp(conn, http_code, body <> "\n")
@@ -139,21 +142,6 @@ defmodule MyPlug do
       _ ->
         send_resp(conn, 200, res <> "\n")
     end
-  end
-
-  defp json_resp(conn, status, body) do
-    conn
-    |> put_resp_header("content-type", "application/json")
-    |> send_resp(status, Poison.encode!(body))
-  end
-
-  def handle_errors(conn, %{kind: _kind, reason: _reason, stack: _stack}) do
-    send_resp(conn, conn.status, "Something went wrong")
-  end
-
-  def on_error_fn(conn, errors) do
-    IO.puts("wat")
-    json_resp(conn, 422, errors) |> halt
   end
 end
 
@@ -166,5 +154,6 @@ defmodule MyPipeline do
 
   plug(Plug.Logger)
   plug(PathValidator)
+  plug(Plug.Parsers, parsers: [:json, :urlencoded], json_decoder: Poison)
   plug(MyPlug)
 end
