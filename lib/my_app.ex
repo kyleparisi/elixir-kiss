@@ -3,7 +3,13 @@ defmodule MyApp.App do
 
   def start(_type, _args) do
     children = [
-      {Plug.Cowboy, scheme: :http, plug: Pipeline, options: [port: 4001]},
+      {Plug.Cowboy,
+       scheme: :http,
+       plug: nil,
+       options: [
+         dispatch: dispatch(),
+         port: 4001
+       ]},
       {MyXQL,
        username: "application",
        hostname: "localhost",
@@ -14,6 +20,27 @@ defmodule MyApp.App do
 
     opts = [strategy: :one_for_one, name: MyApp.Supervisor]
     Supervisor.start_link(children, opts)
+  end
+
+  defp dispatch() do
+    [
+      {:_,
+        [
+          {"/ws", WebSocket, %{}},
+          {:_, Plug.Cowboy.Handler, {Pipeline, []}}
+        ]}
+    ]
+  end
+end
+
+defmodule Pinger.Router do
+  use Plug.Router
+
+  plug :match
+  plug :dispatch
+
+  get "/ping" do
+    send_resp(conn, 200, "pong")
   end
 end
 
