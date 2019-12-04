@@ -61,6 +61,11 @@ defmodule Router do
     EEx.eval_file("templates/hello.html.eex", name: name)
   end
 
+  def match("GET", ["user", id], conn) do
+    IO.inspect(conn)
+    "SELECT * FROM user where id = ?" |> DB.query(:db, [conn.path_params["id"]]) |> hd
+  end
+
   def match("POST", ["echo"], conn) do
     IO.inspect conn.body_params
     conn.body_params
@@ -71,12 +76,32 @@ defmodule Router do
   end
 end
 
+defmodule PathValidator do
+  import Plug.Conn
+
+  def init(opts), do: opts
+
+  defp validate_integer(v) do
+    case Integer.parse(v) do
+      :error -> {:error, "could not parse #{v} as integer"}
+      {int, _} -> int
+    end
+  end
+
+  def match("GET", ["user", id], conn) do
+    value = validate_integer(id)
+    put_in(conn.path_params["id"], value)
+  end
+
+  def call(conn, _opts) do
+    match(conn.method, conn.path_info, conn)
+  end
+end
+
 defmodule MyPlug do
   import Plug.Conn
 
-  def init(options) do
-    options
-  end
+  def init(opts), do: opts
 
   def call(conn, _opts) do
     parsers = Plug.Parsers.init(parsers: [:json, :urlencoded], json_decoder: Poison)
@@ -95,4 +120,30 @@ defmodule MyPlug do
         send_resp(conn, 200, res <> "\n")
     end
   end
+
+  defp json_resp(conn, status, body) do
+    conn |> put_resp_header("content-type", "application/json") |> send_resp(status, Poison.encode!(body))
+  end
+
+
+  def handle_errors(conn, %{kind: _kind, reason: _reason, stack: _stack}) do
+    send_resp(conn, conn.status, "Something went wrong")
+  end
+
+  def on_error_fn(conn, errors) do
+    IO.puts "wat"
+    json_resp(conn, 422, errors) |> halt
+  end
+end
+
+defmodule MyPipeline do
+  # We use Plug.Builder to have access to the plug/2 macro.
+  # This macro can receive a function or a module plug and an
+  # optional parameter that will be passed unchanged to the
+  # given plug.
+  use Plug.Builder
+
+  plug Plug.Logger
+  plug PathValidator
+  plug MyPlug
 end
