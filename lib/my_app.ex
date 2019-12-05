@@ -25,10 +25,10 @@ defmodule MyApp.App do
   defp dispatch() do
     [
       {:_,
-        [
-          {"/ws", WebSocket, %{}},
-          {:_, Plug.Cowboy.Handler, {Pipeline, []}}
-        ]}
+       [
+         {"/ws", WebSocket, %{}},
+         {:_, Plug.Cowboy.Handler, {Pipeline, []}}
+       ]}
     ]
   end
 end
@@ -36,8 +36,8 @@ end
 defmodule Pinger.Router do
   use Plug.Router
 
-  plug :match
-  plug :dispatch
+  plug(:match)
+  plug(:dispatch)
 
   get "/ping" do
     send_resp(conn, 200, "pong")
@@ -98,7 +98,7 @@ defmodule MyPlug do
       ["application/json"] ->
         case res do
           {:render, _template_path, data} ->
-            IO.inspect data
+            IO.inspect(data)
             json_resp(conn, 200, data)
 
           _ ->
