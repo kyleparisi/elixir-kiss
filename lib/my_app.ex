@@ -67,7 +67,7 @@ defmodule Router do
   end
 
   def match("GET", ["hello2", name], _conn) do
-    {:render, "templates/hello.html.eex", %{name: name}}
+    {:render, "views/hello.html.eex", %{name: name}}
   end
 
   def match("GET", ["user", _id], conn) do

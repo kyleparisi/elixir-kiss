@@ -6,6 +6,7 @@ defmodule Pipeline do
   use Plug.Builder
 
   plug(Plug.Logger)
+  plug(Plug.Static, from: "public", at: "/")
   plug(PathValidator)
   plug(Plug.Parsers, parsers: [:json, :urlencoded], json_decoder: Poison)
   plug(BodyValidator)
