@@ -11,10 +11,10 @@ defmodule MyApp.App do
          port: 4001
        ]},
       {MyXQL,
-       username: "application",
-       hostname: "localhost",
-       password: "bleepbloop",
-       database: "myapp",
+       username: System.get_env("DB_USERNAME"),
+       hostname: System.get_env("DB_HOST"),
+       password: System.get_env("DB_PASSWORD"),
+       database: System.get_env("DB_DATABASE"),
        name: :db}
     ]
 
