@@ -6,6 +6,8 @@ defmodule Pipeline do
   use Plug.Builder
 
   plug(Plug.Logger)
+  plug(Plug.Session, store: MySession, key: "myapp")
+  plug(:fetch_session)
   plug(Plug.Static, from: "public", at: "/")
   plug(PathValidator)
   plug(Plug.Parsers, parsers: [:json, :urlencoded], json_decoder: Poison)

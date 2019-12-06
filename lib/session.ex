@@ -1,5 +1,5 @@
-defmodule Session do
-  @behavior Plug.Session.Store
+defmodule MySession do
+  @behaviour Plug.Session.Store
 
   def init(opts \\ []), do: opts
 
@@ -9,8 +9,10 @@ defmodule Session do
     {nil, %{}}
   end
 
-  def get(_conn, sid, opts) do
-    sessions = "SELECT * FROM session WHERE sid = '?' LIMIT 1;" |> DB.query(:db, [sid])
+  def get(_conn, sid, _opts) do
+    IO.puts("get session")
+    sessions = "SELECT * FROM session WHERE sid = ? LIMIT 1;" |> DB.query(:db, [sid])
+
     if Enum.empty?(sessions) do
       {nil, %{}}
     else
@@ -18,19 +20,27 @@ defmodule Session do
     end
   end
 
-  def put(conn, nil, data, init_options) do
-    put(conn, generate_random_key(), data, init_options)
-  end
-
-  def put(conn, sid, data, opts) do
+  def put(_conn, nil, data, _opts) do
+    IO.puts("new session")
+    sid = generate_random_key()
     now = DateTime.utc_now()
     datetime = DateTime.to_string(%{now | microsecond: {0, 0}}) |> String.replace("Z", "")
     timestamp = DateTime.to_unix(now)
-    "INSERT INTO session SET sid = ?, expire = ?, date_time = ?" |> DB.query(:db, [sid, timestamp, datetime])
+
+    "INSERT INTO session SET sid = ?, expire = ?, date_time = ?, data = ?;"
+    |> DB.query(:db, [sid, timestamp, datetime, data])
+
     sid
   end
 
-  def delete(conn, sid, opts) do
+  def put(_conn, sid, data, _opts) do
+    IO.puts("put session")
+    "UPDATE session SET data = ? WHERE sid = ? LIMIT 1;" |> DB.query(:db, [data, sid])
+    sid
+  end
+
+  def delete(_conn, sid, _opts) do
+    "DELETE FROM session where sid = ? LIMIT 1;" |> DB.query(:db[sid])
   end
 
   defp generate_random_key do

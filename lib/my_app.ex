@@ -79,6 +79,10 @@ defmodule Router do
     conn.body_params
   end
 
+  def match("GET", ["session"], conn) do
+    "ok"
+  end
+
   def match(_, _, _) do
     {:not_found, "Not Found"}
   end
@@ -91,6 +95,7 @@ defmodule MyPlug do
   def init(opts), do: opts
 
   def call(conn, _opts) do
+    conn = Plug.Conn.put_session(conn, :foo, "bar")
     res = Router.match(conn.method, conn.path_info, conn)
 
     case get_req_header(conn, "accept") do
