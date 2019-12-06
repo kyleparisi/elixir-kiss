@@ -80,7 +80,7 @@ defmodule Router do
   end
 
   def match("GET", ["session"], conn) do
-    "ok"
+    Plug.Conn.get_session(conn)
   end
 
   def match(_, _, _) do

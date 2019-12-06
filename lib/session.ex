@@ -11,12 +11,13 @@ defmodule MySession do
 
   def get(_conn, sid, _opts) do
     IO.puts("get session")
-    sessions = "SELECT * FROM session WHERE sid = ? LIMIT 1;" |> DB.query(:db, [sid])
+    session = "SELECT data FROM session WHERE sid = ? LIMIT 1;" |> DB.query(:db, [sid]) |> hd
+    {:ok, data} = Poison.decode(session["data"])
 
-    if Enum.empty?(sessions) do
+    if Enum.empty?(session) do
       {nil, %{}}
     else
-      {sid, hd(sessions)}
+      {sid, data}
     end
   end
 
