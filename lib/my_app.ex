@@ -80,7 +80,9 @@ defmodule Router do
   end
 
   def match("GET", ["session"], conn) do
-    Plug.Conn.get_session(conn)
+    str = :crypto.strong_rand_bytes(5) |> Base.url_encode64 |> binary_part(0, 5)
+    conn = Plug.Conn.put_session(conn, :test, str)
+    {:conn, conn, Plug.Conn.get_session(conn)}
   end
 
   def match(_, _, _) do
@@ -95,8 +97,15 @@ defmodule MyPlug do
   def init(opts), do: opts
 
   def call(conn, _opts) do
-    conn = Plug.Conn.put_session(conn, :foo, "bar")
     res = Router.match(conn.method, conn.path_info, conn)
+
+    # things like put_session modify the connection, so a mechanism to replace the
+    # connection in the plug is needed
+    {conn, res} =
+      case res do
+        {:conn, new_conn, new_res} -> {new_conn, new_res}
+        _ -> {conn, res}
+      end
 
     case get_req_header(conn, "accept") do
       # Handle explicit json requests
