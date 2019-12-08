@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export ERL_AFLAGS="-kernel shell_history enabled"
+
 if test -f ".env.default"; then
   export $(cat .env.default | grep -v ^# | xargs);
 fi

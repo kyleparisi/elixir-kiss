@@ -15,7 +15,8 @@ defmodule MyApp.App do
        hostname: System.get_env("DB_HOST"),
        password: System.get_env("DB_PASSWORD"),
        database: System.get_env("DB_DATABASE"),
-       name: :db}
+       name: :db},
+      {Phoenix.PubSub, name: MyApp.PubSub}
     ]
 
     Application.put_env(:myxql, :json_library, Poison, [])
