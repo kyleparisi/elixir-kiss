@@ -23,7 +23,6 @@ defmodule MyApp.MixProject do
   defp deps do
     [
       {:plug_cowboy, "~> 2.0"},
-      {:jason, "~> 1.0"},
       {:poison, "~> 3.1"},
       {:myxql, "~> 0.2.0"}
     ]

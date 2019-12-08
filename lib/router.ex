@@ -2,10 +2,10 @@ defmodule Router do
   import Validations
 
   def validate_body("POST", ["login"], conn),
-      do: [
-        validate_not_empty("email", conn.body_params["email"]),
-        validate_not_empty("password", conn.body_params["email"])
-      ]
+    do: [
+      validate_not_empty("email", conn.body_params["email"]),
+      validate_not_empty("password", conn.body_params["email"])
+    ]
 
   def validate_body(_, _, _), do: []
 
@@ -34,7 +34,7 @@ defmodule Router do
   end
 
   def match("GET", ["session"], conn) do
-    str = :crypto.strong_rand_bytes(5) |> Base.url_encode64 |> binary_part(0, 5)
+    str = :crypto.strong_rand_bytes(5) |> Base.url_encode64() |> binary_part(0, 5)
     conn = Plug.Conn.put_session(conn, :test, str)
     {:conn, conn, Plug.Conn.get_session(conn)}
   end
